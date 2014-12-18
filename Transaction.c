@@ -1,4 +1,5 @@
 #include <immintrin.h>
+#include <cpuid.h>
 #include "Transaction.h"
 
 #define likely(x)       __builtin_expect(!!(x), 1)
@@ -145,6 +146,22 @@ JNIEXPORT void JNICALL Java_Transaction_execute__Ljava_lang_Runnable_2
 {
   tx_execute(env, thisObj);
 }
+
+/*
+ * Class:     Transaction
+ * Method:    hasRTMSupport
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_Transaction_hasRTMSupport
+  (JNIEnv *env, jclass klass)
+{
+  unsigned int a, b, c, d;
+  __cpuid_count(0x07, 0, a, b, c, d);
+  if (b & (1 << 11))
+    return 1;
+  return 0;
+}
+
 
 __attribute__((destructor))
 static void display_stats() {
