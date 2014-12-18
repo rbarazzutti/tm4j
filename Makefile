@@ -6,7 +6,7 @@ JAVA=java
 .SUFFIXES: .class .java
 .PHONY: clean
 
-all: Main.class Transaction.class libtm-tsx.so
+all: TestCounter.class Transaction.class libtm-tsx.so
 
 .java.class:
 	$(JAVAC) $<
@@ -17,7 +17,7 @@ libtm-tsx.so: Transaction.c Transaction.h
 Transaction.h: Transaction.class
 	$(JAVAH) -jni Transaction
 
-Main: Main.class
+TestCounter: TestCounter.class
 	$(JAVA) -Djava.library.path=. $@ 1
 
 clean:

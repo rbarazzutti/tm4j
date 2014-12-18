@@ -1,10 +1,7 @@
-import java.util.concurrent.atomic.AtomicLong;
-
-public class Main extends Thread
+public class TestCounter extends Thread
 {
-  public volatile long local_counter = 0;
+  private static final int loops = 1024*1024;
   public static volatile long global_counter = 0;
-  public static AtomicLong atomic_counter = new AtomicLong(0);
 
   public class TxExec extends Transaction
   {
@@ -17,17 +14,24 @@ public class Main extends Thread
   public void run()
   {
     TxExec exec = new TxExec();
-    for (int i = 0; i < 1024*1024; i++) {
-      local_counter++;
-      //global_counter++;
+    for (int i = 0; i < loops; i++) {
       exec.execute();
-      atomic_counter.getAndIncrement();
     }
-    System.out.println("local_counter="+local_counter);
   }
 
-  public static void main(String[] args) {
-    int nb_threads = 1;
+  public static boolean isValid()
+  {
+    if (global_counter != loops * nb_threads) {
+      System.err.println("Failed (actual:"+global_counter+" expected:"+(loops * nb_threads)+")");
+      return false;
+    }
+    return true;
+  }
+
+  public static int nb_threads = 1;
+
+  public static void main(String[] args)
+  {
     if (args.length >= 1) {
       try {
         nb_threads = Integer.parseInt(args[0]);
@@ -38,7 +42,7 @@ public class Main extends Thread
     Thread threads[] = new Thread[nb_threads];
 
     for (int i = 0; i < nb_threads; i++) {
-      threads[i] = new Main();
+      threads[i] = new TestCounter();
     }
     for (int i = 0; i < nb_threads; i++) {
       threads[i].start();
@@ -49,8 +53,7 @@ public class Main extends Thread
       } catch (Exception e) {
       }
     }
-
-    System.out.println("global_counter="+global_counter);
-    System.out.println("atomic_counter="+atomic_counter.get());
+    if (!isValid())
+      System.exit(1);
   }
 }
