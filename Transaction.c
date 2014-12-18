@@ -60,7 +60,7 @@ static inline void glock_release(void)
 /**
  * Starts the transaction and returns the execution mode to give to tx_end function.
  */
-static inline int tx_begin(void)
+static inline unsigned int tx_begin(void)
 {
   unsigned int i;
   unsigned int xstatus;
@@ -89,12 +89,14 @@ static inline int tx_begin(void)
   // Monitor the serial lock
   if (xstatus == _XBEGIN_STARTED && unlikely(glock))
     _xabort(0xFF);
+
+  return xstatus;
 }
 
 /**
  * Commits the transaction. This requires the return of tx_begin to know in what mode the transaction is executed (HTM or serial).
  */
-static inline void tx_end(int xstatus)
+static inline void tx_end(unsigned int xstatus)
 {
   if (xstatus == _XBEGIN_STARTED) {
     _xend();
@@ -107,7 +109,7 @@ static inline void tx_end(int xstatus)
 /**
  * Execute the 'run' function from thisObj in a transaction.
  */
-static inline tx_execute(JNIEnv *env, jobject thisObj)
+static inline void tx_execute(JNIEnv *env, jobject thisObj)
 {
   unsigned int mode;
 
