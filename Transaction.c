@@ -27,15 +27,20 @@ static const char *reason_str[] = {"UNKNOWN FAULT","_XABORT_EXPLICIT","_XABORT_R
 
 static struct stats tx_stats = {0};
 
-// TODO inline all this function.
-static void glock_wait(void)
+/**
+ * Wait for the serial lock to be released.
+ */
+static inline void glock_wait(void)
 {
   while (glock) {
     _mm_pause();
   }
 }
 
-static void glock_acquire(void)
+/**
+ * Acquire the serial lock.
+ */
+static inline void glock_acquire(void)
 {
   // TODO maybe use the same strategy as in pthread_spin_lock
   while (glock == 1 || __sync_bool_compare_and_swap(&glock, 0, 1) == 0) {
@@ -43,30 +48,23 @@ static void glock_acquire(void)
   }
 }
 
-static void glock_release(void)
+/**
+ * Release the serial lock.
+ */
+static inline void glock_release(void)
 {
-  // TODO barrier required here?
+  // XXX a barrier is probably required here even if it is x86?
   glock = 0;
 }
 
-
-/*
- * Class:     Transaction
- * Method:    execute
- * Signature: ()V
+/**
+ * Starts the transaction and returns the execution mode to give to tx_end function.
  */
-JNIEXPORT void JNICALL Java_Transaction_execute
-  (JNIEnv *env, jobject thisObj)
+static inline int tx_begin(void)
 {
   unsigned int i;
   unsigned int xstatus;
   unsigned long retries = MAX_RETRIES;
-
-  jclass thisClass = (*env)->GetObjectClass(env, thisObj);
-  
-  jmethodID midCallBack = (*env)->GetMethodID(env, thisClass, "run", "()V");
-  if (midCallBack == NULL)
-    return;
 
   // TODO maybe use macro from rtm-goto instead (can save few cycles)
   while (unlikely((xstatus = _xbegin()) != _XBEGIN_STARTED)) {
@@ -91,9 +89,13 @@ JNIEXPORT void JNICALL Java_Transaction_execute
   // Monitor the serial lock
   if (xstatus == _XBEGIN_STARTED && unlikely(glock))
     _xabort(0xFF);
+}
 
-  (*env)->CallVoidMethod(env, thisObj, midCallBack);
-
+/**
+ * Commits the transaction. This requires the return of tx_begin to know in what mode the transaction is executed (HTM or serial).
+ */
+static inline void tx_end(int xstatus)
+{
   if (xstatus == _XBEGIN_STARTED) {
     _xend();
     tx_stats.commit++;
@@ -102,9 +104,48 @@ JNIEXPORT void JNICALL Java_Transaction_execute
   }
 }
 
+/**
+ * Execute the 'run' function from thisObj in a transaction.
+ */
+static inline tx_execute(JNIEnv *env, jobject thisObj)
+{
+  unsigned int mode;
+
+  jclass thisClass = (*env)->GetObjectClass(env, thisObj);
+
+  jmethodID midCallBack = (*env)->GetMethodID(env, thisClass, "run", "()V");
+  if (midCallBack == NULL)
+    return;
+
+  mode = tx_begin();
+  (*env)->CallVoidMethod(env, thisObj, midCallBack);
+  tx_end(mode);
+}
+
+/*
+ * Class:     Transaction
+ * Method:    execute
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_Transaction_execute__
+  (JNIEnv *env, jobject thisObj)
+{
+  tx_execute(env, thisObj);
+}
+
+/*
+ * Class:     Transaction
+ * Method:    execute
+ * Signature: (Ljava/lang/Runnable;)V
+ */
+JNIEXPORT void JNICALL Java_Transaction_execute__Ljava_lang_Runnable_2
+  (JNIEnv *env, jclass klass, jobject thisObj)
+{
+  tx_execute(env, thisObj);
+}
 
 __attribute__((destructor))
-static void destroy_navigationBarImages() {
+static void display_stats() {
   unsigned int i;
   printf("#commit: %lu\n", tx_stats.commit);
   printf("#serial: %lu\n", tx_stats.serial);

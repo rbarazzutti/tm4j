@@ -3,6 +3,7 @@
 public class Transaction implements Runnable {
   public void run() {}
   public native void execute();
+  public static native void execute(Runnable r);
  
   static {
     System.loadLibrary("tm-tsx");
