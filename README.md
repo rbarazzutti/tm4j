@@ -27,5 +27,6 @@ In order to check this assomption, you can use the paramter `-Xcomp` to force ev
 - Check what API deuce, multiverse, ... proposed
 - What about @Inline annotation?
 - XX:CompileThreshold
-- or you can use the parameter XXX to compile only the method that will be used inside the transaction 
+- or you can use the parameter XXX to compile only the method that will be used inside the transaction
+- look at IBM Power8 Transactional Memory features
 
