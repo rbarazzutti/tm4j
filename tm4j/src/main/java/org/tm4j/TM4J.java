@@ -4,11 +4,11 @@ public class TM4J {
     static final private TMExecutor executor = findExecutor();
 
     static private TMExecutor findExecutor() {
-        String executors[] = {"org.tm4j.TSXExecutor", "org.tm4j.ScalaSTMExecutor", "org.tm4j.DumbExecutor"};
+        String executors[] = {"TSXExecutor", "Power8Executor", "ScalaSTMExecutor", "DumbExecutor"};
 
         for (String executorName : executors)
             try {
-                Class<?> clazz = Class.forName(executorName);
+                Class<?> clazz = Class.forName("org.tm4j." + executorName);
 
                 Object executor = clazz.newInstance();
                 if (executor instanceof TMExecutor)

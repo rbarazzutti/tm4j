@@ -5,7 +5,10 @@ import Keys._
 object Dependencies {
   def funsuite = libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.0-M1" % "test,compile"
 
-  def junit = libraryDependencies += "junit" % "junit" % "4.12" % "test,compile"
+  def junit = libraryDependencies ++= Seq(
+    "junit" % "junit" % "4.12" % "test,compile",
+    "com.novocode" % "junit-interface" % "0.11" % Test
+  )
 }
 
 object Tm4jProject extends Build {
@@ -19,7 +22,8 @@ object Tm4jProject extends Build {
     fork := true,
     parallelExecution in Test := false,
     scalacOptions ++= Seq("-feature", "-deprecation", "-unchecked"),
-    organization := "org.tm4j"
+    organization := "org.tm4j",
+    testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v")
   )
 
   val noScala = Seq(
@@ -32,7 +36,7 @@ object Tm4jProject extends Build {
 
   lazy val tm4j = Project(id = "tm4j",
     base = file("tm4j"),
-    settings = standardSettings ++ noScala
+    settings = standardSettings ++ junit ++ noScala
   )
 
   lazy val tm4s = Project(id = "tm4s",
