@@ -5,7 +5,7 @@ import org.scalatest.FunSuite
 import TM4S._
 
 class TM4STest extends FunSuite {
-  test("Fifty tausend concurrent mutations") {
+  test("Fifty thousands concurrent mutations") {
     var a = true
     var b = true
     case class BooleanMutator(v: Boolean) extends Thread {
