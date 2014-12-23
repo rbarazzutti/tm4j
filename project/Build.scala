@@ -3,6 +3,8 @@ import Keys._
 
 
 object Dependencies {
+  val scalaLangVersion = "2.11.4"
+
   def funsuite = libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.0-M1" % "test,compile"
 
   def junit = libraryDependencies ++= Seq(
@@ -22,6 +24,7 @@ object Tm4jProject extends Build {
     fork := true,
     parallelExecution in Test := false,
     scalacOptions ++= Seq("-feature", "-deprecation", "-unchecked"),
+    scalaVersion := scalaLangVersion,
     organization := "org.tm4j",
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v")
   )
