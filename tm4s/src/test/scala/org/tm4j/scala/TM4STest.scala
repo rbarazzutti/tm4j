@@ -5,22 +5,22 @@ import org.scalatest.FunSuite
 import TM4S._
 
 class TM4STest extends FunSuite {
-  test("Fifty thousands concurrent mutations") {
+  test("One hundred thousands concurrent mutations") {
     var a = true
     var b = true
+
     case class BooleanMutator(v: Boolean) extends Thread {
       var corrupted = false
 
       override def run(): Unit = {
 
         for (i ← 1 to 50000) {
-          if (
-            atomic {
-              val check = (a != b)
-              a = v
-              b = v
-              check
-            }) corrupted = true
+          transaction {
+            if (a != b)
+              corrupted = true
+            a = v
+            b = v
+          }
         }
       }
     }
@@ -35,6 +35,6 @@ class TM4STest extends FunSuite {
     y.join()
 
     assert(!x.corrupted && !y.corrupted)
+    assert(stats.getSerialCommitsCount + stats.getTransactionalCommitsCount == 100000)
   }
-
 }
