@@ -8,6 +8,17 @@ import java.util.concurrent.Callable;
 public class TM4J {
     static final private TMExecutor executor = findExecutor();
 
+    public static final TMContext defaultContext;
+
+    static {
+        defaultContext=new TMContext() {
+            @Override
+            public int getMaxNumberOfRetries() {
+                return 50;
+            }
+        };
+    }
+
     static private TMExecutor findExecutor() {
         String executors[] = {"TSXExecutor", "Power8Executor", "ScalaSTMExecutor", "DumbExecutor"};
 
