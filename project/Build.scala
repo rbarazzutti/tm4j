@@ -48,9 +48,22 @@ object Tm4jProject extends Build {
 
   ).dependsOn(tm4j, tm4jDumb % "test")
 
+
+  import com.github.joprice.Jni
+  import Jni.Keys._
+
   lazy val tm4jTsx = Project(id = "tm4j-tsx",
     base = file("tm4j-tsx"),
-    settings = standardSettings ++ noScala
+    settings = standardSettings ++ noScala ++ Jni.settings
+      ++ Seq(
+      cpp11 := false,
+      libraryName := "libTm4jTsx",
+      gccFlags ++= Seq("-mrtm"),
+      nativeCompiler := "gcc",
+      jniClasses := Seq(
+        "org.tm4j.TSXJNI"
+      )
+    )
   ).dependsOn(tm4j)
 
   lazy val tm4jDumb = Project(id = "tm4j-dumb",
