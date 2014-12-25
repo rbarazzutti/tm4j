@@ -20,20 +20,33 @@ public interface TMExecutor {
      * @param callable
      * @param <T>
      * @param context
-     * @return
+     * @return the result of callable
      * @throws Exception
      */
     public <T> T execute(Callable<T> callable, TMContext context) throws Exception;
 
     /**
      *
-     * @return a
+     * @return the description of this implementation of transactional memory executor
      */
     public String getDescription();
 
+    /**
+     *
+     * @return true if this executor is powered by a hardware feature (i.e. Intel TSX, IBM Power8, ...)
+     */
     public boolean isHardware();
 
+    /**
+     *
+     * @return true if this executor is supported (more likely related with the availability of an
+     * hardware feature, but could also be related with JVM features).
+     */
     public boolean isSupported();
 
+    /**
+     *
+     * @return the current statistics of this executor
+     */
     public TMStats getStats();
 }
