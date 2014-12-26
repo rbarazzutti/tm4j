@@ -11,7 +11,7 @@ public class TSXExecutor extends TSXJNI implements TMExecutor {
 
 
     public boolean isSupported() {
-        return hasRTMSupport();
+        return isLoaded() && hasRTMSupport();
     }
 
     public String getDescription() {
