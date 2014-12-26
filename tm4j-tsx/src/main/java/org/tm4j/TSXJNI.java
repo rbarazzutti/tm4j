@@ -17,7 +17,7 @@ public class TSXJNI {
         try {
             System.loadLibrary("tm-tsx");
             loaded = true;
-        } catch (Exception e) {
+        } catch (LinkageError e) {
             loaded = false;
         }
     }
