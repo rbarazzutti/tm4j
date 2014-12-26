@@ -26,8 +26,4 @@ public class TSXExecutor extends TSXJNI implements TMExecutor {
         // TODO implement me!
         return null;
     }
-
-    static {
-        System.loadLibrary("tm-tsx");
-    }
 }
