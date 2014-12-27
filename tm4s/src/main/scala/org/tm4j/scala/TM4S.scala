@@ -14,7 +14,7 @@ object TM4S {
     def call: R = f
   }
 
-  def transaction[R](f: ⇒ R)(implicit context: TMContext = TM4J.defaultContext): R = TM4J.getExecutor.execute(f)
+  def transaction[R](f: ⇒ R)(implicit context: TMContext = TM4J.defaultContext): R = TM4J.getExecutor.execute(f, context)
 
   def executor = TM4J.getExecutor
 
