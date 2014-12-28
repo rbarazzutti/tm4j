@@ -10,11 +10,16 @@ import java.util.concurrent.Callable;
  * @see org.tm4j.TMExecutor
  */
 public class DumbExecutor implements TMExecutor {
-    private long serialCount=0;
-    public <T> T execute(Callable<T> c, TMContext context) throws Exception {
+    private long serialCount = 0;
+
+    public <T> T execute(Callable<T> c, TMContext context) throws RuntimeException {
         synchronized (this) {
+            try{
             serialCount++;
-            return c.call();
+            return c.call();}
+            catch(Exception e){
+                throw new TMException(e);
+            }
         }
     }
 
@@ -30,7 +35,7 @@ public class DumbExecutor implements TMExecutor {
         return true;
     }
 
-    public TMStats getStats(){
+    public TMStats getStats() {
         return new TMStats() {
             @Override
             public long getSerialCommitsCount() {

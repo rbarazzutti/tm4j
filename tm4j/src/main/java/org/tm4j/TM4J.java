@@ -47,11 +47,11 @@ public class TM4J {
             throw new TMException("No transactional memory executor found in classpath");
     }
 
-    static public <T> T transaction(Callable<T> c, TMContext context) throws Exception {
+    static public <T> T transaction(Callable<T> c, TMContext context) throws RuntimeException {
         return getExecutor().execute(c, context);
     }
 
-    static public <T> T transaction(Callable<T> c) throws Exception {
+    static public <T> T transaction(Callable<T> c) throws RuntimeException {
         return transaction(c, null);
     }
 

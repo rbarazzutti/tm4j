@@ -21,9 +21,9 @@ public interface TMExecutor {
      * @param <T>
      * @param context
      * @return the result of callable
-     * @throws Exception
+     * @throws RuntimeException
      */
-    public <T> T execute(Callable<T> callable, TMContext context) throws Exception;
+    public <T> T execute(Callable<T> callable, TMContext context) throws RuntimeException;
 
     /**
      *
