@@ -11,7 +11,7 @@ public class TM4J {
     public static final TMContext defaultContext;
 
     static {
-        defaultContext=new TMContext() {
+        defaultContext = new TMContext() {
             @Override
             public int getMaxNumberOfRetries() {
                 return 50;

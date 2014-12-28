@@ -12,13 +12,13 @@ import java.util.concurrent.Callable;
 public class DumbExecutor implements TMExecutor {
     private long serialCount = 0;
 
-    public <T> T execute(Callable<T> c, TMContext context) throws RuntimeException {
+    public <T> T execute(Callable<T> c, TMContext context) throws TMWrappedException {
         synchronized (this) {
             try{
             serialCount++;
             return c.call();}
             catch(Exception e){
-                throw new TMException(e);
+                throw new TMWrappedException(e);
             }
         }
     }
