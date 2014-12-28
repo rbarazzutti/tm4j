@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
  */
 public class DumbExecutor implements TMExecutor {
     private long serialCount=0;
-    public <T> T execute(Callable<T> c) throws Exception {
+    public <T> T execute(Callable<T> c, TMContext context) throws Exception {
         synchronized (this) {
             serialCount++;
             return c.call();
