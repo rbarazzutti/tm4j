@@ -5,39 +5,42 @@ import org.scalatest.FunSuite
 import TM4S._
 
 class TM4STest extends FunSuite {
-  val n = 50000;
+  val n = 500
+  val t = 200
 
-  test(n + " concurrent mutations") {
-    var a = true
-    var b = true
+  test(s"$t concurrent threads each one executing $n transactions") {
+    var a = 0
+    var b = 0
 
-    case class BooleanMutator(v: Boolean) extends Thread {
+    case class Mutator(v: Int) extends Thread {
       var corrupted = false
 
       override def run(): Unit = {
-
         for (i ← 1 to n) {
           transaction {
             if (a != b)
               corrupted = true
-            a = v
-            b = v
+            a += v
+            b += v
           }
+          // wait 100 µs to avoid to increase contention
+          Thread.sleep(0, 100)
         }
       }
     }
 
-    val x = new BooleanMutator(true)
-    val y = new BooleanMutator(false)
+    val threads = (0 until t).map(i ⇒ Mutator(2 * i - t + 1))
 
-    x.start()
-    y.start()
+    threads.foreach(_.start())
 
-    x.join()
-    y.join()
+    threads.foreach(_.join())
 
-    assert(!x.corrupted && !y.corrupted)
-    assert(stats.getSerialCommitsCount == n * 2)
-    assert(stats.getTransactionCount == n * 2)
+    threads.foreach(t ⇒ assert(!t.corrupted))
+
+    assert(stats.getSerialCommitsCount == n * t)
+    assert(stats.getTransactionCount == n * t)
+
+    assert(a == 0)
+    assert(b == 0)
   }
 }

@@ -2,14 +2,37 @@ package org.tm4j;
 
 import org.junit.Test;
 
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import static org.junit.Assert.*;
 import static org.tm4j.TM4J.*;
 
 public class DumbExecutorTest {
 
+    static private void safeJoin(final Thread a) {
+        try {
+            a.join();
+        } catch (Exception e) {
+            // do nothing
+        }
+    }
+
+    static private void safeSleep(final long m, final int n) {
+        try {
+            Thread.sleep(m, n);
+        } catch (Exception e) {
+            // do nothing
+        }
+    }
+
     @Test
     public void concurrentMutations() throws InterruptedException {
-        int n = 500000;
+        int n = 500;
+        int t = 200;
 
         class State {
             int a = 0;
@@ -37,26 +60,22 @@ public class DumbExecutorTest {
 
                         return corrupted;
                     })) corrupted = true;
+                    // wait 100 µs to avoid to increase contention
+                    safeSleep(0, 100);
                 }
             }
 
 
         }
 
-        Mutator x = new Mutator(-1);
-        Mutator y = new Mutator(+1);
+        List<Mutator> mutators = IntStream.range(0, t).mapToObj(i -> new Mutator(2 * i - t + 1)).collect(Collectors.toList());
 
-        x.start();
-        y.start();
+        mutators.forEach(Thread::start);
 
-        x.join();
-        y.join();
+        mutators.forEach(DumbExecutorTest::safeJoin);
 
-        if (x.corrupted || y.corrupted) fail("Corrupted counters detected");
-
-        assertEquals(n * 2, TM4J.getStats().getSerialCommitsCount());
+        assertEquals(n * t, TM4J.getStats().getSerialCommitsCount());
         assertEquals(0, TM4J.getStats().getAbortsCount());
-        assertEquals(n * 2, TM4J.getStats().getTransactionCount());
-
+        assertEquals(n * t, TM4J.getStats().getTransactionCount());
     }
 }
