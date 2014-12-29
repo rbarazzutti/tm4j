@@ -10,9 +10,7 @@ public class TM4JTest {
     public void noDefaultExecutor() {
         try {
             TM4J.getExecutor();
-            transaction(() -> {
-                return null;
-            });
+            transaction(() -> null);
             fail();
         } catch (TMException e) {
             // supposed to throw an exception, no default executor is provided with TM4J
