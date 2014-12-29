@@ -5,7 +5,9 @@ import org.scalatest.FunSuite
 import TM4S._
 
 class TM4STest extends FunSuite {
-  test("One hundred thousands concurrent mutations") {
+  val n = 50000;
+
+  test(n + " concurrent mutations") {
     var a = true
     var b = true
 
@@ -14,7 +16,7 @@ class TM4STest extends FunSuite {
 
       override def run(): Unit = {
 
-        for (i ← 1 to 50000) {
+        for (i ← 1 to n) {
           transaction {
             if (a != b)
               corrupted = true
@@ -35,6 +37,7 @@ class TM4STest extends FunSuite {
     y.join()
 
     assert(!x.corrupted && !y.corrupted)
-    assert(stats.getSerialCommitsCount + stats.getTransactionalCommitsCount == 100000)
+    assert(stats.getSerialCommitsCount == n * 2)
+    assert(stats.getTransactionCount == n * 2)
   }
 }

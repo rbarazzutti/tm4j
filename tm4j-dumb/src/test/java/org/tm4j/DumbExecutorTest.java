@@ -56,7 +56,7 @@ public class DumbExecutorTest {
 
         assertEquals(n * 2, TM4J.getStats().getSerialCommitsCount());
         assertEquals(0, TM4J.getStats().getAbortsCount());
-        assertEquals(0, TM4J.getStats().getTransactionalCommitsCount());
+        assertEquals(n * 2, TM4J.getStats().getTransactionCount());
 
     }
 }
