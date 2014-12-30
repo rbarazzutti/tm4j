@@ -12,10 +12,7 @@
 #define XFAIL(label)   label: asm volatile("" ::: "eax")
 #define XFAIL_STATUS(label, status) label: asm volatile("" : "=a" (status))
 
-/* TODO MAX_RETRIES could a variable since it is not on the hot path */
-#define MAX_RETRIES (8)
-
-/* 2 cachelines here because haswell has a feature to prefetch adjacent cache */
+/* 2 cachelines here because Haswell has a feature to prefetch adjacent cache */
 __attribute__((aligned(128)))
 static volatile unsigned long glock = 0;
 struct stats {
@@ -61,11 +58,11 @@ static inline void glock_release(void)
 /**
  * Starts the transaction and returns the execution mode to give to tx_end function.
  */
-static inline unsigned int tx_begin(void)
+static inline unsigned int tx_begin(int user_retries)
 {
   unsigned int i;
   unsigned int xstatus;
-  unsigned long retries = MAX_RETRIES;
+  unsigned long retries = user_retries;
 
   // TODO maybe use macro from rtm-goto instead (can save few cycles)
   while (unlikely((xstatus = _xbegin()) != _XBEGIN_STARTED)) {
@@ -108,28 +105,28 @@ static inline void tx_end(unsigned int xstatus)
 }
 
 /**
- * Execute the 'run' function from thisObj in a transaction.
+ * Execute the 'call' function from 'callable' object in a transaction.
  */
-static inline jobject tx_execute(JNIEnv *env, jobject thisObj, jobject callable)
+JNIEXPORT jobject JNICALL Java_org_tm4j_TSXJNI_execute
+  (JNIEnv *env, jobject thisObj, jobject callable, jint retries)
 {
+  jclass thisClass;
+  jmethodID midCallBack;
+  jobject out;
   unsigned int mode;
 
-  jclass thisClass = (*env)->GetObjectClass(env, callable);
+  thisClass = (*env)->GetObjectClass(env, callable);
 
-  jmethodID midCallBack = (*env)->GetMethodID(env, thisClass, "call", "()V");
-  if (midCallBack == NULL)
+  midCallBack = (*env)->GetMethodID(env, thisClass, "call", "()V");
+  if (unlikely(midCallBack == NULL))
     return NULL;
 
-  mode = tx_begin();
-  jobject out=(*env)->CallObjectMethod(env, thisObj, midCallBack);
+  // TODO A default number of retries is probably way better than letting the user to do it. Can change it later
+  mode = tx_begin(retries);
+  out = (*env)->CallObjectMethod(env, thisObj, midCallBack);
   tx_end(mode);
-  return out;
-}
 
-JNIEXPORT jobject JNICALL Java_org_tm4j_TSXExecutor_execute
-  (JNIEnv *env, jobject thisObj, jobject callable)
-{
-  return tx_execute(env, thisObj, callable);
+  return out;
 }
 
 
