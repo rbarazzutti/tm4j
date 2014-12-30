@@ -5,9 +5,9 @@ package org.tm4j;
  */
 public interface TMStats {
 
-    public long getSerialCommitsCount();
+    public long getSerials();
 
-    public long getTransactionCount();
+    public long getTransactions();
 
-    public long getAbortsCount();
+    public long getAborts();
 }

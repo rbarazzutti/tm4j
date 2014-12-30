@@ -37,8 +37,8 @@ class TM4STest extends FunSuite {
 
     threads.foreach(t ⇒ assert(!t.corrupted))
 
-    assert(stats.getSerialCommitsCount == n * t)
-    assert(stats.getTransactionCount == n * t)
+    assert(stats.getSerials == n * t)
+    assert(stats.getTransactions == n * t)
 
     assert(a == 0)
     assert(b == 0)

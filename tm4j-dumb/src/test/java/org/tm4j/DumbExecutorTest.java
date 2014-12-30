@@ -74,8 +74,8 @@ public class DumbExecutorTest {
 
         mutators.forEach(DumbExecutorTest::safeJoin);
 
-        assertEquals(n * t, TM4J.getStats().getSerialCommitsCount());
-        assertEquals(0, TM4J.getStats().getAbortsCount());
-        assertEquals(n * t, TM4J.getStats().getTransactionCount());
+        assertEquals(n * t, TM4J.getStats().getSerials());
+        assertEquals(0, TM4J.getStats().getAborts());
+        assertEquals(n * t, TM4J.getStats().getTransactions());
     }
 }

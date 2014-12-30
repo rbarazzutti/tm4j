@@ -38,17 +38,17 @@ public class DumbExecutor implements TMExecutor {
     public TMStats getStats() {
         return new TMStats() {
             @Override
-            public long getSerialCommitsCount() {
+            public long getSerials() {
                 return transactionsCount;
             }
 
             @Override
-            public long getTransactionCount() {
+            public long getTransactions() {
                 return transactionsCount;
             }
 
             @Override
-            public long getAbortsCount() {
+            public long getAborts() {
                 return 0;
             }
         };
