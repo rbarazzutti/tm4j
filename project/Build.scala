@@ -54,7 +54,7 @@ object Tm4jProject extends Build {
 
   lazy val tm4jTsx = Project(id = "tm4j-tsx",
     base = file("tm4j-tsx"),
-    settings = standardSettings ++ noScala ++ Jni.settings
+    settings = standardSettings ++ noScala ++ junit ++ Jni.settings
       ++ Seq(
       cpp11 := false,
       libraryName := "libTm4jTsx",
