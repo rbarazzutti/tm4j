@@ -15,7 +15,7 @@ public class TSXJNI {
 
     static {
         try {
-            System.loadLibrary("tm-tsx");
+            System.loadLibrary("Tm4jTsx");
             loaded = true;
         } catch (LinkageError e) {
             loaded = false;
