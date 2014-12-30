@@ -167,7 +167,7 @@ JNIEXPORT jobject JNICALL Java_org_tm4j_TSXJNI_execute
   unsigned int mode;
 
   thisClass = (*env)->GetObjectClass(env, callable);
-  midCallBack = (*env)->GetMethodID(env, thisClass, "call", "()V");
+  midCallBack = (*env)->GetMethodID(env, thisClass, "call", "()Ljava/lang/Object;");
   if (unlikely(midCallBack == NULL))
     return NULL;
 
