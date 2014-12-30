@@ -22,11 +22,3 @@ Indeed, the interpreter adds a lot of memory accesses and is not as efficient as
 Anyway, transactions are meant to be executed in a hot spot that will be most probably compiled by the JIT compiler.
 In order to check this assomption, you can use the paramter `-Xcomp` to force every methods to be compiled (Warning, this option is quite brutal and will slow down the startup).
 
-
-## TODO
-- Check what API deuce, multiverse, ... proposed
-- What about @Inline annotation?
-- XX:CompileThreshold
-- or you can use the parameter XXX to compile only the method that will be used inside the transaction
-- look at IBM Power8 Transactional Memory features
-
