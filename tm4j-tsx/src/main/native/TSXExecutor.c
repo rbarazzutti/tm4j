@@ -5,25 +5,12 @@
 #define likely(x)       __builtin_expect(!!(x), 1)
 #define unlikely(x)     __builtin_expect(!!(x), 0)
 
-/* RTM macros. Not using bultin for the xbegin to avoid useless comparison */
-#define XABORT(status) asm volatile(".byte 0xc6,0xf8,%P0" :: "i" (status))
-#define XBEGIN(label)  asm volatile goto(".byte 0xc7,0xf8 ; .long %l0-1f\n1:" ::: "eax" : label)
-#define XEND()         asm volatile(".byte 0x0f,0x01,0xd5")
-#define XFAIL(label)   label: asm volatile("" ::: "eax")
-#define XFAIL_STATUS(label, status) label: asm volatile("" : "=a" (status))
-
-/* 2 cachelines here because Haswell has a feature to prefetch adjacent cache */
+/* Serial lock to permit a transaction to run even if cannot be executed in an
+ * hardware transaction.
+ * NOTE: fits 2 cachelines because Haswell has a feature to prefetch adjacent
+ * cache line. */
 __attribute__((aligned(128)))
 static volatile unsigned long glock = 0;
-struct stats {
-  unsigned long commit;
-  unsigned long serial;
-  unsigned long aborts;
-  unsigned long reason[8];
-};
-static const char *reason_str[] = {"UNKNOWN FAULT","_XABORT_EXPLICIT","_XABORT_RETRY","_XABORT_CONFLICT","_XABORT_CAPACITY","_XABORT_DEBUG","_XABORT_NESTED","UNKNOW"};
-
-static struct stats tx_stats = {0};
 
 /**
  * Wait for the serial lock to be released.
@@ -53,6 +40,33 @@ static inline void glock_release(void)
 {
   // XXX a barrier is probably required here even if it is x86?
   glock = 0;
+}
+
+/*
+ * For statistics collection.
+ */
+struct stats {
+  unsigned long commit;
+  unsigned long serial;
+  unsigned long aborts;
+  unsigned long reason[8];
+};
+static const char *reason_str[] = {"UNKNOWN FAULT","_XABORT_EXPLICIT","_XABORT_RETRY","_XABORT_CONFLICT","_XABORT_CAPACITY","_XABORT_DEBUG","_XABORT_NESTED","UNKNOW"};
+static struct stats tx_stats = {0};
+
+/*
+ * Display statistics when the library is unloaded.
+ * TODO: create a JNI interface to get those numbers.
+ */
+__attribute__((destructor))
+static void display_stats() {
+  unsigned int i;
+  printf("#commit: %lu\n", tx_stats.commit);
+  printf("#serial: %lu\n", tx_stats.serial);
+  printf("#aborts: %lu\n", tx_stats.aborts);
+  for (i = 0; i < 8; i++) {
+    printf("#reason %s: %lu\n", reason_str[i], tx_stats.reason[i]);
+  }
 }
 
 /**
@@ -147,13 +161,3 @@ JNIEXPORT jboolean JNICALL Java_org_tm4j_TSXJNI_hasRTMSupport
   return 0;
 }
 
-__attribute__((destructor))
-static void display_stats() {
-  unsigned int i;
-  printf("#commit: %lu\n", tx_stats.commit);
-  printf("#serial: %lu\n", tx_stats.serial);
-  printf("#aborts: %lu\n", tx_stats.aborts);
-  for (i = 0; i < 8; i++) {
-    printf("#reason %s: %lu\n", reason_str[i], tx_stats.reason[i]);
-  }
-}
