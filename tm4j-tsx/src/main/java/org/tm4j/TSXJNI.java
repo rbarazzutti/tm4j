@@ -13,6 +13,10 @@ public class TSXJNI {
 
     protected native boolean hasRTMSupport();
 
+    protected native long TMStats_getTransactions();
+    protected native long TMStats_getSerials();
+    protected native long TMStats_getAborts();
+
     static {
         try {
             System.loadLibrary("Tm4jTsx");

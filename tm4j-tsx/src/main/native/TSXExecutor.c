@@ -46,7 +46,7 @@ static inline void glock_release(void)
  * For statistics collection.
  */
 struct stats {
-  unsigned long commit;
+  unsigned long transactions;
   unsigned long serial;
   unsigned long aborts;
   unsigned long reason[8];
@@ -55,13 +55,46 @@ static const char *reason_str[] = {"UNKNOWN FAULT","_XABORT_EXPLICIT","_XABORT_R
 static struct stats tx_stats = {0};
 
 /*
- * Display statistics when the library is unloaded.
- * TODO: create a JNI interface to get those numbers.
+ * Class:     org_tm4j_TSXJNI
+ * Method:    TMStats_getTransactions
+ * Signature: ()J
  */
-__attribute__((destructor))
-static void display_stats() {
+JNIEXPORT jlong JNICALL Java_org_tm4j_TSXJNI_TMStats_1getTransactions
+  (JNIEnv *env, jobject obj)
+{
+  return tx_stats.transactions;
+}
+
+/*
+ * Class:     org_tm4j_TSXJNI
+ * Method:    TMStats_getSerials
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_org_tm4j_TSXJNI_TMStats_1getSerials
+  (JNIEnv *env, jobject obj)
+{
+  return tx_stats.serial;
+}
+
+/*
+ * Class:     org_tm4j_TSXJNI
+ * Method:    TMStats_getAborts
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_org_tm4j_TSXJNI_TMStats_1getAborts
+  (JNIEnv *env, jobject obj)
+{
+  return tx_stats.aborts;
+}
+
+/* TODO: create a JNI interface to get extended stats. */
+
+/*
+ * Display statistics. Unused from now.
+ */
+void display_stats(void) {
   unsigned int i;
-  printf("#commit: %lu\n", tx_stats.commit);
+  printf("#transactions: %lu\n", tx_stats.transactions);
   printf("#serial: %lu\n", tx_stats.serial);
   printf("#aborts: %lu\n", tx_stats.aborts);
   for (i = 0; i < 8; i++) {
@@ -77,6 +110,7 @@ static inline unsigned int tx_begin(int user_retries)
   unsigned int i;
   unsigned int xstatus;
   unsigned long retries = user_retries;
+  tx_stats.transactions++;
 
   // TODO maybe use macro from rtm-goto instead (can save few cycles)
   while (unlikely((xstatus = _xbegin()) != _XBEGIN_STARTED)) {
@@ -112,7 +146,6 @@ static inline void tx_end(unsigned int xstatus)
 {
   if (xstatus == _XBEGIN_STARTED) {
     _xend();
-    tx_stats.commit++;
   } else {
     glock_release();
   }

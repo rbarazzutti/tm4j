@@ -2,11 +2,11 @@ package org.tm4j;
 
 import java.util.concurrent.Callable;
 
-public class TSXExecutor extends TSXJNI implements TMExecutor {
-
-
+public class TSXExecutor extends TSXJNI implements TMExecutor
+{
     public <V> V execute(Callable<V> c, TMContext context) {
-        return execute(c, context.getMaxNumberOfRetries());
+        // FIXME context can be null, but should remove user-specified retries
+        return execute(c, 8 /*context.getMaxNumberOfRetries()*/);
     }
 
     public boolean isSupported() {
@@ -22,7 +22,22 @@ public class TSXExecutor extends TSXJNI implements TMExecutor {
     }
 
     public TMStats getStats() {
-        // TODO implement me!
-        return null;
+        return new TMStats() {
+            @Override
+            public long getSerials() {
+                return TMStats_getSerials();
+            }
+
+            @Override
+            public long getTransactions() {
+                return TMStats_getTransactions();
+            }
+
+            @Override
+            public long getAborts() {
+                return TMStats_getAborts();
+            }
+            // TODO To be completed for extended stats
+        };
     }
 }

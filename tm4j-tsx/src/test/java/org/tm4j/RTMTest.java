@@ -29,4 +29,15 @@ public class RTMTest
 
         assertEquals(rtm, hardware);
     }
+
+    private static long count;
+    @Test
+    public void RTMStatsTest() {
+        count = 0;
+        transaction(() -> {
+          return count++;
+        });
+        assertEquals(1, count);
+        assertEquals(1, TM4J.getStats().getTransactions());
+    }
 }
