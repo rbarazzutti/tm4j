@@ -104,7 +104,11 @@ static inline void tx_end(unsigned int xstatus)
   }
 }
 
-/**
+/*
+ * Class:     org_tm4j_TSXJNI
+ * Method:    execute
+ * Signature: (Ljava/util/concurrent/Callable;I)Ljava/lang/Object;
+ *
  * Execute the 'call' function from 'callable' object in a transaction.
  */
 JNIEXPORT jobject JNICALL Java_org_tm4j_TSXJNI_execute
@@ -116,12 +120,11 @@ JNIEXPORT jobject JNICALL Java_org_tm4j_TSXJNI_execute
   unsigned int mode;
 
   thisClass = (*env)->GetObjectClass(env, callable);
-
   midCallBack = (*env)->GetMethodID(env, thisClass, "call", "()V");
   if (unlikely(midCallBack == NULL))
     return NULL;
 
-  // TODO A default number of retries is probably way better than letting the user to do it. Can change it later
+  // TODO A default number of retries is probably way better than letting the user to do it.
   mode = tx_begin(retries);
   out = (*env)->CallObjectMethod(env, thisObj, midCallBack);
   tx_end(mode);
@@ -129,6 +132,20 @@ JNIEXPORT jobject JNICALL Java_org_tm4j_TSXJNI_execute
   return out;
 }
 
+/*
+ * Class:     org_tm4j_TSXJNI
+ * Method:    hasRTMSupport
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_tm4j_TSXJNI_hasRTMSupport
+  (JNIEnv *env, jobject jobj)
+{
+  unsigned int a, b, c, d;
+  __cpuid_count(0x07, 0, a, b, c, d);
+  if (b & (1 << 11))
+    return 1;
+  return 0;
+}
 
 __attribute__((destructor))
 static void display_stats() {
