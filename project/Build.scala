@@ -49,12 +49,12 @@ object Tm4jProject extends Build {
   ).dependsOn(tm4j, tm4jDumb % "test")
 
 
-  import com.github.joprice.Jni
+  import ch.fever.sbtjni.Jni
   import Jni.Keys._
 
   lazy val tm4jTsx = Project(id = "tm4j-tsx",
     base = file("tm4j-tsx"),
-    settings = standardSettings ++ noScala ++ junit ++ Jni.settings
+    settings = standardSettings ++ junit++ noScala ++ Jni.settings
       ++ Seq(
       cpp11 := false,
       libraryName := "libTm4jTsx",
