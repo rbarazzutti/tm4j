@@ -3,7 +3,7 @@ import Keys._
 
 
 object Dependencies {
-  val scalaLangVersion = "2.11.4"
+  val scalaLangVersion = "2.11.5"
 
   def funsuite = libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.0-M1" % "test,compile"
 
