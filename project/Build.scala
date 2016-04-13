@@ -30,7 +30,8 @@ object Tm4jProject extends Build {
   )
 
   val noScala = Seq(
-    autoScalaLibrary := false
+    autoScalaLibrary := false,
+    crossPaths := false
   )
 
   lazy val root = Project(id = "tm4j-project",
